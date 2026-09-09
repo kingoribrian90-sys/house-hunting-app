@@ -28,7 +28,7 @@ function HouseOwnerRegistration() {
 				</div>
 
 				<div className="form-field">
-					<label htmlFor="electricity-billing-mode">Select Utility Billing Mode</label>
+					<label htmlFor="electricity-billing-mode" style={{fontWeight: 'bold'}}>Select Utility Billing Mode</label>
 					<label htmlFor="electricity-billing-mode">Electricity</label>
 					<select name="electricity-billing-mode" id="electricity-billing-mode" required>
 						<option value="prepaid">Prepaid</option>

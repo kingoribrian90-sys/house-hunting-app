@@ -2,10 +2,13 @@ import { useState } from 'react'
 
 import TenantsPaymentWindow from './tenants-payment-window'
 
+import HouseTypePreview from './house-type-preview'
+
+
 const budgetOptions = [
     {
         max: 30000,
-        label: 'KSh 15,000 - KSh 30,000',
+        label: 'KSh 5,000 - KSh 30,000',
         houseTypes: ['Single room', 'Bedsitter'],
         locations: ['Kasarani', 'Roysambu', 'Embakasi'],
     },
@@ -16,22 +19,30 @@ const budgetOptions = [
         locations: ['Kilimani', 'Lavington', 'Kileleshwa'],
     },
     {
-        max: 100000,
-        label: 'KSh 60,000 - KSh 100,000',
+        max: 60000,
+        label: 'KSh 55,000 - KSh 60,000',
         houseTypes: ['One bedroom', 'Two bedroom'],
         locations: ['Westlands', 'Riverside', 'Karen'],
     },
 ]
 
+const houseTypeKeys = {
+    'Single room': 'single',
+    'Bedsitter': 'bedsitter',
+    'One bedroom': 'one-bedroom',
+    'Two bedroom': 'two-bedroom',
+}
+
 function TenantSelection() {
     const [tenantLocation, setTenantLocation] = useState('')
-    const [tenantBudget, setTenantBudget] = useState(30000)
+    const [tenantBudget, setTenantBudget] = useState(5000)
     const [paymentOpen, setPaymentOpen] = useState(false)
+    const [previewOpen, setPreviewOpen] = useState(false)
     const selectedBudget = budgetOptions.find((option) => tenantBudget <= option.max)
 
     function handleSubmit(event) {
         event.preventDefault()
-        setPaymentOpen(true)
+        setPreviewOpen(true)
     }
 
     return (
@@ -61,15 +72,15 @@ function TenantSelection() {
                         id="budget-range"
                         name="budget-range"
                         type="range"
-                        min="15000"
-                        max="100000"
+                        min="5000"
+                        max="60000"
                         step="5000"
                         value={tenantBudget}
                         onChange={(event) => setTenantBudget(Number(event.target.value))}
                     />
                     <div className="slider-labels" aria-hidden="true">
-                        <span>KSh 15k</span>
-                        <span>KSh 100k</span>
+                        <span>KSh 5k</span>
+                        <span>KSh 60k</span>
                     </div>
                 </div>
                 <div className="recommendation" aria-live="polite">
@@ -81,6 +92,16 @@ function TenantSelection() {
                 </div>
                 <button type="submit">Continue to payment</button>
             </form>
+            {previewOpen && (
+                <HouseTypePreview
+                    houseTypes={selectedBudget.houseTypes.map((type) => houseTypeKeys[type])}
+                    onClose={() => setPreviewOpen(false)}
+                    onContinue={() => {
+                        setPreviewOpen(false)
+                        setPaymentOpen(true)
+                    }}
+                />
+            )}
             {paymentOpen && (
                 <TenantsPaymentWindow
                     location={tenantLocation}

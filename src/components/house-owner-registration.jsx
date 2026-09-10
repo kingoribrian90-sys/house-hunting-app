@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import HouseTypePreview from './house-type-preview'
 
 function HouseOwnerRegistration() {
-	const [submitted, setSubmitted] = useState(false)
+	const [selectedHouseType, setSelectedHouseType] = useState('single')
+	const [previewOpen, setPreviewOpen] = useState(false)
 
 	function handleSubmit(event) {
 		event.preventDefault()
-		setSubmitted(true)
+		setPreviewOpen(true)
 	}
 
 	return (
@@ -19,7 +21,7 @@ function HouseOwnerRegistration() {
 
 				<div className="form-field">
 					<label htmlFor="housetype">Preferred housetype</label>
-					<select name="housetype" id="housetype" required>
+					<select name="housetype" id="housetype" value={selectedHouseType} onChange={(event) => setSelectedHouseType(event.target.value)} required>
 						<option value="single">Single</option>
 						<option value="bedsitter">Bedsitter</option>
 						<option value="one-bedroom">One bedroom</option>
@@ -53,8 +55,8 @@ function HouseOwnerRegistration() {
 					<input id="owner-email" name="email" type="email" placeholder="you@example.com" required />
 				</div>
 				<button type="submit">Find a home</button>
-				{submitted && <p className="form-success" role="status">Thanks. We will help you find a home.</p>}
 			</form>
+			{previewOpen && <HouseTypePreview houseType={selectedHouseType} onClose={() => setPreviewOpen(false)} />}
 		</>
 	)
 }

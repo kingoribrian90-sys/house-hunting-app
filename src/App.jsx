@@ -1,9 +1,11 @@
 import './App.css'
 import { useState } from 'react'
+import Authentication from './components/authentication'
 import HouseOwnerRegistration from './components/house-owner-registration'
 import TenantSelection from './components/tenant-selection'
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(false)
   const [userType, setUserType] = useState(null)
 
   return (
@@ -14,7 +16,9 @@ function App() {
 
      </header>  
      <main>
-        {userType === null && (
+        {!authenticated && <Authentication onAuthenticated={() => setAuthenticated(true)} />}
+
+        {authenticated && userType === null && (
           <div className="role-backdrop" role="presentation">
             <section className="role-window" role="dialog" aria-modal="true" aria-labelledby="role-title">
               <p className="recommendation-kicker">Welcome</p>

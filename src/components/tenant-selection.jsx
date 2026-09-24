@@ -3,6 +3,7 @@ import { useState } from 'react'
 import TenantsPaymentWindow from './tenants-payment-window'
 
 import HouseTypePreview from './house-type-preview'
+import PropertyDetailsWindow from './property-details-window'
 
 
 const budgetOptions = [
@@ -38,6 +39,7 @@ function TenantSelection() {
     const [tenantBudget, setTenantBudget] = useState(5000)
     const [paymentOpen, setPaymentOpen] = useState(false)
     const [previewOpen, setPreviewOpen] = useState(false)
+    const [propertyDetails, setPropertyDetails] = useState(null)
     const selectedBudget = budgetOptions.find((option) => tenantBudget <= option.max)
 
     function handleSubmit(event) {
@@ -95,10 +97,23 @@ function TenantSelection() {
             {previewOpen && (
                 <HouseTypePreview
                     houseTypes={selectedBudget.houseTypes.map((type) => houseTypeKeys[type])}
+                    location={tenantLocation}
+                    budget={tenantBudget}
                     onClose={() => setPreviewOpen(false)}
+                    onViewDetails={setPropertyDetails}
                     onContinue={() => {
                         setPreviewOpen(false)
                         setPaymentOpen(true)
+                    }}
+                />
+            )}
+            {propertyDetails && (
+                <PropertyDetailsWindow
+                    property={propertyDetails}
+                    onClose={() => setPropertyDetails(null)}
+                    onNotInterested={() => {
+                        setPropertyDetails(null)
+                        setPreviewOpen(false)
                     }}
                 />
             )}

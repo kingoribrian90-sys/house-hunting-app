@@ -31,7 +31,7 @@ const houseTypePhotos = {
     },
 }
 
-function HouseTypePreview({ houseType, houseTypes, onClose, onContinue }) {
+function HouseTypePreview({ houseType, houseTypes, location, budget, onClose, onContinue, onViewDetails }) {
     const selectedHouseTypes = houseTypes || [houseType]
 
     return (
@@ -58,6 +58,18 @@ function HouseTypePreview({ houseType, houseTypes, onClose, onContinue }) {
                                     <img key={photo} src={photo} alt={`${selection.label} sample ${index + 1}`} />
                                 ))}
                             </div>
+                            <button
+                                className="property-details-button"
+                                type="button"
+                                onClick={() => onViewDetails({
+                                    type: selection.label,
+                                    photo: selection.photos[0],
+                                    location,
+                                    budget,
+                                })}
+                            >
+                                View full details
+                            </button>
                         </div>
                     )
                 })}

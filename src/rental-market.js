@@ -1,3 +1,4 @@
+// Rental ranges grouped by county, neighborhood, and house type.
 const marketProfiles = {
     'Nairobi County': {
         Kasarani: { 'Single room': [4000, 7000], Bedsitter: [8000, 13000], 'One bedroom': [14000, 22000], 'Two bedroom': [24000, 38000] },
@@ -79,10 +80,18 @@ const marketProfiles = {
 }
 
 function formatRentRange([minimum, maximum]) {
+    // Format numeric ranges as readable Kenyan shilling amounts.
     return `KSh ${minimum.toLocaleString()} - ${maximum.toLocaleString()}`
 }
 
+export function getRentEstimate(county, location, houseType) {
+    const rentRange = marketProfiles[county]?.[location]?.[houseType]
+
+    return rentRange ? { minimum: rentRange[0], maximum: rentRange[1] } : null
+}
+
 export function getMarketRecommendations(county, budget, houseTypes, locations) {
+    // Find options in the requested areas that are close to the tenant's budget.
     const countyProfiles = marketProfiles[county] || {}
 
     return locations.flatMap((location) => {
@@ -95,6 +104,7 @@ export function getMarketRecommendations(county, budget, houseTypes, locations) 
 
                 return { location, houseType, rentRange, fitsBudget }
             })
+        // Show all budget matches, or the closest option when none match.
         const visibleOptions = options.filter((option) => option.fitsBudget)
         const optionsToShow = visibleOptions.length > 0
             ? visibleOptions

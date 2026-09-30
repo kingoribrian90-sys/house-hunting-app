@@ -48,12 +48,15 @@ const houseTypeKeys = {
 }
 
 function TenantSelection() {
+    // Store the tenant's search choices and the open follow-up windows.
     const [tenantLocation, setTenantLocation] = useState('')
+    const [tenantLocality, setTenantLocality] = useState('')
     const [tenantBudget, setTenantBudget] = useState(5000)
     const [paymentOpen, setPaymentOpen] = useState(false)
     const [previewOpen, setPreviewOpen] = useState(false)
-    const [locationDetailsOpen, setLocationDetailsOpen] = useState(false)
     const [standardListingsOpen, setStandardListingsOpen] = useState(false)
+    const [selectedListing, setSelectedListing] = useState(null)
+    // Derive the matching budget band, county data, and market guidance.
     const selectedBudget = budgetOptions.find((option) => tenantBudget <= option.max)
     const selectedCounty = urbanCountyOptions.find((option) => option.county === tenantLocation)
     const marketRecommendations = selectedCounty
@@ -62,6 +65,7 @@ function TenantSelection() {
 
     function handleSubmit(event) {
         event.preventDefault()
+        // Preview recommended home types before starting payment.
         setPreviewOpen(true)
     }
 
@@ -72,15 +76,35 @@ function TenantSelection() {
                 <div className="form-field">
                     <label htmlFor="tenant-location">Preferred county</label>
                     <select
+                        placeholder='e.g Nakuru county'
                         id="tenant-location"
                         name="tenant-location"
                         value={tenantLocation}
-                        onChange={(event) => setTenantLocation(event.target.value)}
+                        onChange={(event) => {
+                            setTenantLocation(event.target.value)
+                            setTenantLocality('')
+                        }}
                         required
                     >
-                        <option value="">Select an urban county</option>
+                        <option value="">Choose a county</option>
                         {urbanCountyOptions.map((option) => (
                             <option value={option.county} key={option.county}>{option.county}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="form-field">
+                    <label htmlFor="tenant-locality">Preferred locality</label>
+                    <select
+                        id="tenant-locality"
+                        name="tenant-locality"
+                        value={tenantLocality}
+                        onChange={(event) => setTenantLocality(event.target.value)}
+                        disabled={!selectedCounty}
+                        required
+                    >
+                        <option value="">Choose a locality</option>
+                        {selectedCounty?.locations.map((locality) => (
+                            <option value={locality} key={locality}>{locality}</option>
                         ))}
                     </select>
                 </div>
@@ -97,10 +121,11 @@ function TenantSelection() {
                         type="range"
                         min="3000"
                         max="40000"
-                        step="3000"
+                        step="1000"
                         value={tenantBudget}
                         onChange={(event) => setTenantBudget(Number(event.target.value))}
                     />
+                    {/* Label the slider endpoints so the range is easy to scan. */}
                     <div className="slider-labels" aria-hidden="true">
                         <span>KSh 3k</span>
                         <span>KSh 40k</span>
@@ -125,14 +150,15 @@ function TenantSelection() {
                     <button
                         className="location-details-trigger"
                         type="button"
-                        onClick={() => setLocationDetailsOpen(true)}
-                        disabled={!tenantLocation}
+                        onClick={() => setStandardListingsOpen(true)}
+                        disabled={!tenantLocality}
                     >
-                        View live area details
+                        Browse Listings on Map
                     </button>
                 </div>
                 <button type="submit">Continue to payment</button>
             </form>
+            {/* Move from recommendations to payment after the preview. */}
             {previewOpen && (
                 <HouseTypePreview
                     houseTypes={selectedBudget.houseTypes.map((type) => houseTypeKeys[type])}
@@ -150,23 +176,25 @@ function TenantSelection() {
                     onClose={() => setPaymentOpen(false)}
                 />
             )}
-            {locationDetailsOpen && (
-                <LocationDetailsWindow
-                    location={tenantLocation}
-                    onClose={() => setLocationDetailsOpen(false)}
-                    onShowListings={() => {
-                        setLocationDetailsOpen(false)
-                        setStandardListingsOpen(true)
-                    }}
-                />
-            )}
-            {standardListingsOpen && (
+            {standardListingsOpen && !selectedListing && (
                 <StandardListingsMap
                     location={tenantLocation}
+                    locality={tenantLocality}
                     budget={tenantBudget}
                     suggestedLocations={selectedCounty.locations}
                     recommendations={marketRecommendations}
-                    onClose={() => setStandardListingsOpen(false)}
+                    onSelectListing={setSelectedListing}
+                    onClose={() => {
+                        setSelectedListing(null)
+                        setStandardListingsOpen(false)
+                    }}
+                />
+            )}
+            {selectedListing && (
+                <LocationDetailsWindow
+                    listing={selectedListing}
+                    onClose={() => setSelectedListing(null)}
+                    onBackToMap={() => setSelectedListing(null)}
                 />
             )}
         </>

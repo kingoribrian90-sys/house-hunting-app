@@ -1,12 +1,33 @@
 import { useState } from 'react'
 import HouseTypePreview from './house-type-preview'
+import HouseOwnerPayListingFee from './house-owner-pay-listing-fee'
 
-function HouseOwnerRegistration() {
+const urbanCountyOptions = [
+	{ county: 'Nairobi County', locations: ['Kasarani', 'Roysambu', 'Westlands', 'Kilimani', 'Embakasi'] },
+	{ county: 'Mombasa County', locations: ['Nyali', 'Bamburi', 'Kisauni', 'Mombasa Island', 'Likoni'] },
+	{ county: 'Kisumu County', locations: ['Milimani', 'Kondele', 'Mamboleo', 'Manyatta', 'Riat Hills'] },
+	{ county: 'Nakuru County', locations: ['Nakuru Town', 'Milimani', 'Section 58', 'Kiamunyi', 'Pipeline'] },
+	{ county: 'Kiambu County', locations: ['Ruiru', 'Thika', 'Kikuyu', 'Limuru', 'Kiambu Town'] },
+	{ county: 'Uasin Gishu County', locations: ['Eldoret CBD', 'Kapsoya', 'Pioneer', 'Elgon View', 'Annex'] },
+	{ county: 'Machakos County', locations: ['Machakos Town', 'Mavoko', 'Athi River', 'Syokimau', 'Kangundo Road'] },
+	{ county: 'Kajiado County', locations: ['Kitengela', 'Rongai', 'Ngong', 'Kiserian', 'Oloosuyian'] },
+	{ county: "Murang'a County", locations: ["Murang'a Town", 'Mukuyu', 'Gakoigo', 'Mumbi', 'Ihura'] },
+	{ county: 'Nyeri County', locations: ['Nyeri Town', 'Kamakwa', "King'ong'o", "Ruring'u", 'Kiganjo'] },
+	{ county: 'Kakamega County', locations: ['Kakamega Town', 'Milimani', 'Lurambi', 'Shieywe', 'Mahiakalo'] },
+]
+
+function HouseOwnerRegistration({ onListingSubmitted }) {
+	// Store the selected home type and whether its preview is visible.
 	const [selectedHouseType, setSelectedHouseType] = useState('single')
+	const [preferredLocation, setPreferredLocation] = useState('')
+	const [preferredLocality, setPreferredLocality] = useState('')
 	const [previewOpen, setPreviewOpen] = useState(false)
+	const [listingFeeOpen, setListingFeeOpen] = useState(false)
+	const selectedCounty = urbanCountyOptions.find((option) => option.county === preferredLocation)
 
 	function handleSubmit(event) {
 		event.preventDefault()
+		// Open sample photos after the owner form passes browser validation.
 		setPreviewOpen(true)
 	}
 
@@ -14,9 +35,41 @@ function HouseOwnerRegistration() {
 		<>
 			<h2 className="house-owner-form-header">House owner's search</h2>
 			<form className="search-form" onSubmit={handleSubmit}>
+				{/* Collect the county and locality for the prospective listing. */}
 				<div className="form-field">
-					<label htmlFor="owner-location">Preferred location</label>
-					<input id="owner-location" name="location" type="text" placeholder="e.g. Nairobi" required style={{ border: '1px solid #ccc', padding: '8px', color: '#f5f5dc' }} />
+					<label htmlFor="owner-location">Preferred county</label>
+					<select
+						id="owner-location"
+						name="location"
+						value={preferredLocation}
+						onChange={(event) => {
+							setPreferredLocation(event.target.value)
+							setPreferredLocality('')
+						}}
+						required
+					>
+						<option value="">Choose a county</option>
+						{urbanCountyOptions.map((option) => (
+							<option value={option.county} key={option.county}>{option.county}</option>
+						))}
+					</select>
+				</div>
+
+				<div className="form-field">
+					<label htmlFor="owner-locality">Preferred locality</label>
+					<select
+						id="owner-locality"
+						name="locality"
+						value={preferredLocality}
+						onChange={(event) => setPreferredLocality(event.target.value)}
+						disabled={!selectedCounty}
+						required
+					>
+						<option value="">Choose a locality</option>
+						{selectedCounty?.locations.map((locality) => (
+							<option value={locality} key={locality}>{locality}</option>
+						))}
+					</select>
 				</div>
 
 				<div className="form-field">
@@ -56,7 +109,28 @@ function HouseOwnerRegistration() {
 				</div>
 				<button type="submit">Find a home</button>
 			</form>
-			{previewOpen && <HouseTypePreview houseType={selectedHouseType} onClose={() => setPreviewOpen(false)} />}
+			{/* Display the selected house type without leaving the form. */}
+			{previewOpen && (
+				<HouseTypePreview
+					houseType={selectedHouseType}
+					onClose={() => setPreviewOpen(false)}
+					onReturnToSearch={() => setPreviewOpen(false)}
+					onPayListingFee={() => {
+						setPreviewOpen(false)
+						setListingFeeOpen(true)
+					}}
+				/>
+			)}
+			{listingFeeOpen && (
+				<HouseOwnerPayListingFee
+					onClose={() => setListingFeeOpen(false)}
+					onPaymentSuccess={() => {
+						if (typeof onListingSubmitted === 'function') {
+							onListingSubmitted()
+						}
+					}}
+				/>
+			)}
 		</>
 	)
 }

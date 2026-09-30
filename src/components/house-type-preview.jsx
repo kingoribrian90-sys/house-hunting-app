@@ -31,8 +31,10 @@ const houseTypePhotos = {
     },
 }
 
-function HouseTypePreview({ houseType, houseTypes, onClose, onContinue }) {
+function HouseTypePreview({ houseType, houseTypes, onClose, onContinue, onPayListingFee, onReturnToSearch }) {
+    // Support one house type for owners or several recommended types for tenants.
     const selectedHouseTypes = houseTypes || [houseType]
+    const hasOwnerActions = typeof onPayListingFee === 'function' || typeof onReturnToSearch === 'function'
 
     return (
         <div className="preview-backdrop" role="presentation" onClick={onClose}>
@@ -47,6 +49,7 @@ function HouseTypePreview({ houseType, houseTypes, onClose, onContinue }) {
                 <p className="recommendation-kicker">House type selected</p>
                 <h3 id="preview-title">Sample homes</h3>
                 <p className="preview-description">Here are sample homes matching your selection.</p>
+                {/* Render a gallery for every matching house type. */}
                 {selectedHouseTypes.map((type) => {
                     const selection = houseTypePhotos[type]
 
@@ -61,7 +64,18 @@ function HouseTypePreview({ houseType, houseTypes, onClose, onContinue }) {
                         </div>
                     )
                 })}
-                <button className="preview-done" type="button" onClick={onContinue || onClose}>Continue</button>
+                {hasOwnerActions ? (
+                    <div className="preview-actions">
+                        <button className="preview-done preview-action secondary" type="button" onClick={onReturnToSearch || onClose}>
+                            Go to house owner search
+                        </button>
+                        <button className="preview-done preview-action primary" type="button" onClick={onPayListingFee}>
+                            Pay listing fee
+                        </button>
+                    </div>
+                ) : (
+                    <button className="preview-done" type="button" onClick={onContinue || onClose}>Continue</button>
+                )}
             </section>
         </div>
     )

@@ -26,18 +26,17 @@ const listingCatalog = [
     { county: 'Kakamega County', title: 'Lurambi apartment', area: 'Lurambi', price: 27000, type: 'One bedroom', top: '64%', left: '62%', accent: 'gold' },
 ]
 
-function StandardListingsMap({ location, budget, suggestedLocations, recommendations, onClose }) {
-    const countyListings = listingCatalog.filter((listing) => listing.county === location && suggestedLocations.includes(listing.area))
+function StandardListingsMap({ location, locality, budget, suggestedLocations, recommendations, onSelectListing, onClose }) {
+    // Keep map results constrained to the tenant's selected locality and budget.
+    const countyListings = listingCatalog.filter((listing) => listing.county === location && listing.area === locality && suggestedLocations.includes(listing.area))
+    // Keep selectable map results strictly within the tenant's budget.
     const listingsWithinBudget = countyListings.filter((listing) => listing.price <= budget).sort((first, second) => first.price - second.price)
     const minimumRentListing = countyListings.slice().sort((first, second) => first.price - second.price)[0]
-    const listings = listingsWithinBudget.length > 0 ? listingsWithinBudget : minimumRentListing ? [minimumRentListing] : []
-    const minimumRentMapUrl = minimumRentListing
-        ? `https://www.google.com/maps?q=${encodeURIComponent(`${minimumRentListing.area}, ${location}, Kenya`)}&output=embed`
-        : `https://www.google.com/maps?q=${encodeURIComponent(`${location}, Kenya`)}&output=embed`
+    const listings = listingsWithinBudget
+    const minimumRentMapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${locality}, ${location}, Kenya`)}&output=embed`
     const minimumRentCitationUrl = minimumRentListing
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${minimumRentListing.area}, ${location}, Kenya`)}`
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location}, Kenya`)}`
-    const showingOverBudgetMinimum = listingsWithinBudget.length === 0 && Boolean(minimumRentListing)
 
     return (
         <div className="listings-backdrop" role="presentation" onClick={onClose}>
@@ -46,7 +45,7 @@ function StandardListingsMap({ location, budget, suggestedLocations, recommendat
                 <div className="listings-heading">
                     <div>
                         <p className="recommendation-kicker">Standard listings</p>
-                        <h3 id="standard-listings-title">Homes around {location}</h3>
+                        <h3 id="standard-listings-title">Homes around {locality}</h3>
                         <p>Browse available homes by location and price.</p>
                         {minimumRentListing && (
                             <p className="minimum-rent-callout">
@@ -58,6 +57,7 @@ function StandardListingsMap({ location, budget, suggestedLocations, recommendat
                     </div>
                     <span className="listing-count">{listingsWithinBudget.length} homes under KSh {budget.toLocaleString()}</span>
                 </div>
+                {/* Pair the embedded map with the matching listing results. */}
                 <div className="listings-layout">
                     <div className="listing-map">
                         <iframe
@@ -66,20 +66,36 @@ function StandardListingsMap({ location, budget, suggestedLocations, recommendat
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
                         />
+                        <div className="listing-map-pins" aria-label="Properties on the map">
+                            {listings.map((listing, index) => (
+                                <button
+                                    className="listing-map-pin"
+                                    key={listing.title}
+                                    style={{ top: listing.top, left: listing.left }}
+                                    type="button"
+                                    aria-label={`Show ${listing.title}`}
+                                    onClick={() => onSelectListing(listing)}
+                                >
+                                    <span aria-hidden="true">{index + 1}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="listing-map-locality">{locality}, {location}</p>
                     </div>
                     <div className="listing-results">
                         <div className="listing-results-header"><strong>Nearby homes</strong><span>Sorted by match</span></div>
                         {listings.length > 0 ? (
                             <>
-                                {showingOverBudgetMinimum && <p className="no-listings">No sample listing is within KSh {budget.toLocaleString()}. Showing the cheapest available sample for comparison.</p>}
                                 {listings.map((listing) => (
                             <article className="listing-card" key={listing.title}>
                                 <div className={`listing-thumb ${listing.accent}`} aria-hidden="true"><span>{listing.type}</span></div>
-                                <div><h4>{listing.title}</h4><p>{listing.area} · {listing.type}</p><strong>KSh {listing.price.toLocaleString()}<small> / month</small></strong><a className="listing-map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${listing.area}, Kenya`)}`} target="_blank" rel="noreferrer">Open in Google Maps</a></div>
+                                <div><h4>{listing.title}</h4><p>{listing.area} · {listing.type}</p><strong>KSh {listing.price.toLocaleString()}<small> / month</small></strong><button className="specific-property-button" type="button" onClick={() => onSelectListing(listing)}>Specific Property</button></div>
                             </article>
                                 ))}
                             </>
-                        ) : <p className="no-listings">No sample listings are available for this county yet.</p>}
+                        ) : countyListings.length > 0 ? (
+                            <p className="no-listings">No homes in {locality} are under KSh {budget.toLocaleString()}. Increase your budget to see these listings.</p>
+                        ) : <p className="no-listings">No sample listings are available for {locality} yet.</p>}
                     </div>
                 </div>
             </section>

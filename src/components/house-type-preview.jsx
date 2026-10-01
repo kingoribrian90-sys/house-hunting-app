@@ -1,3 +1,4 @@
+// Import the sample photos used to show what a selected home type looks like.
 import singleRoomCompound from '../assets/single-room-compound.jpeg'
 import singleRoomInside from '../assets/single-room-inside.jpeg'
 import singleRoomOutside from '../assets/single-room-outside.jpeg'
@@ -12,6 +13,7 @@ import twoBedroomIn2 from '../assets/two-bedroom-in2.jpeg'
 import twoBedroomIn3 from '../assets/two-bedroom-in3.jpeg'
 import twoBedroomInside from '../assets/two-bedroom-inside.jpeg'
 
+// Group each property type with its related sample gallery and display name.
 const houseTypePhotos = {
     single: {
         label: 'Single room',
@@ -31,8 +33,9 @@ const houseTypePhotos = {
     },
 }
 
+// This shared preview component can serve both tenant and owner flows.
 function HouseTypePreview({ houseType, houseTypes, location, budget, onClose, onContinue, onPayListingFee, onReturnToSearch, onViewDetails }) {
-    // Support tenant details and owner actions in the shared preview.
+    // Support either a single type or a list of matching types in the selected preview session.
     const selectedHouseTypes = houseTypes || [houseType]
     const hasOwnerActions = typeof onPayListingFee === 'function' || typeof onReturnToSearch === 'function'
 

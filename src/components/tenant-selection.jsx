@@ -9,6 +9,7 @@ import { getMarketRecommendations } from '../rental-market'
 import PropertyDetailsWindow from './property-details-window'
 
 
+// These budget bands map to the house types a tenant can realistically search for.
 const budgetOptions = [
     {
         max: 10000,
@@ -48,6 +49,7 @@ const houseTypeKeys = {
     'Two bedroom': 'two-bedroom',
 }
 
+// This component is the tenant journey: choose county/locality, set a budget, preview matches, and pay for access.
 function TenantSelection() {
     // Store the tenant's search choices and the open follow-up windows.
     const [tenantLocation, setTenantLocation] = useState('')

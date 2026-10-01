@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+// Show a utility estimate for the selected area so the tenant can understand moving costs.
 export function UtilityPaymentBreakdown({ location, utilities }) {
 	const utilityTotal = utilities.reduce((sum, utility) => sum + utility.amount, 0)
 
@@ -19,6 +20,7 @@ export function UtilityPaymentBreakdown({ location, utilities }) {
 	)
 }
 
+// This payment modal lets the tenant purchase a search pass and confirms the completed transaction.
 function TenantsPaymentWindow({ location, budget, onClose }) {
 	// Track payment completion and the pass selected by the tenant.
 	const [paid, setPaid] = useState(false)

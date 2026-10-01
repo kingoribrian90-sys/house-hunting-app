@@ -1,3 +1,4 @@
+// After a successful listing payment, this panel confirms the owner is done and can return to searching.
 function HouseOwnerDashboard({ onBackToSearch }) {
 	return (
 		<div className="dashboard-backdrop" role="presentation">

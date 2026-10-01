@@ -2,6 +2,7 @@ import { useState } from 'react'
 import HouseTypePreview from './house-type-preview'
 import HouseOwnerPayListingFee from './house-owner-pay-listing-fee'
 
+// Define the counties and corresponding localities that the owner may choose from.
 const urbanCountyOptions = [
 	{ county: 'Nairobi County', locations: ['Kasarani', 'Roysambu', 'Westlands', 'Kilimani', 'Embakasi'] },
 	{ county: 'Mombasa County', locations: ['Nyali', 'Bamburi', 'Kisauni', 'Mombasa Island', 'Likoni'] },
@@ -16,8 +17,9 @@ const urbanCountyOptions = [
 	{ county: 'Kakamega County', locations: ['Kakamega Town', 'Milimani', 'Lurambi', 'Shieywe', 'Mahiakalo'] },
 ]
 
+// This form collects an owner's intended listing area and home preferences before opening the preview/payment flow.
 function HouseOwnerRegistration({ onListingSubmitted }) {
-	// Store the selected home type and whether its preview is visible.
+	// Keep the selected home type and advanced form state in local React state.
 	const [selectedHouseType, setSelectedHouseType] = useState('single')
 	const [preferredLocation, setPreferredLocation] = useState('')
 	const [preferredLocality, setPreferredLocality] = useState('')
@@ -25,9 +27,9 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 	const [listingFeeOpen, setListingFeeOpen] = useState(false)
 	const selectedCounty = urbanCountyOptions.find((option) => option.county === preferredLocation)
 
+	// After the browser validates the form, show the sample property preview.
 	function handleSubmit(event) {
 		event.preventDefault()
-		// Open sample photos after the owner form passes browser validation.
 		setPreviewOpen(true)
 	}
 

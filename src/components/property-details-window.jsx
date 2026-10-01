@@ -1,4 +1,6 @@
+// A tenant-facing summary popup showing the core renting information for a selected property.
 function PropertyDetailsWindow({ property, onClose, onNotInterested }) {
+    // Reuse the selected budget value to build a simple cost summary for the demo listing.
     const rent = property.budget
     const deposit = rent
     const serviceCharge = 2500
@@ -56,7 +58,7 @@ function PropertyDetailsWindow({ property, onClose, onNotInterested }) {
                 <div className="details-actions">
                     <p>Would you like to rent this home?</p>
                     <div>
-                        <button type="button" onClick={onClose}>Yes, I’m interested</button>
+                        <button type="button" onClick={onClose}>Yes, I'm interested</button>
                         <button className="secondary-action" type="button" onClick={onNotInterested}>Not for me</button>
                     </div>
                 </div>

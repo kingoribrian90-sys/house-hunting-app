@@ -1,3 +1,4 @@
+// Sample listings used to populate the map view and help the tenant browse nearby homes.
 const listingCatalog = [
     { county: 'Nairobi County', title: 'Sunlit bedsitter', area: 'Kasarani', price: 18000, type: 'Bedsitter', top: '28%', left: '32%', accent: 'coral' },
     { county: 'Nairobi County', title: 'Quiet one bedroom', area: 'Roysambu', price: 32000, type: 'One bedroom', top: '44%', left: '57%', accent: 'teal' },
@@ -26,6 +27,7 @@ const listingCatalog = [
     { county: 'Kakamega County', title: 'Lurambi apartment', area: 'Lurambi', price: 27000, type: 'One bedroom', top: '64%', left: '62%', accent: 'gold' },
 ]
 
+// This modal shows a clustered map of available homes within the selected county and locality.
 function StandardListingsMap({ location, locality, budget, suggestedLocations, recommendations, onSelectListing, onClose }) {
     // Keep map results constrained to the tenant's selected locality and budget.
     const countyListings = listingCatalog.filter((listing) => listing.county === location && listing.area === locality && suggestedLocations.includes(listing.area))

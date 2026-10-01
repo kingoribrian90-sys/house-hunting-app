@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
+// This form handles the owner's one-time listing fee payment before the property goes live.
 function HouseOwnerPayListingFee({ onClose, onPaymentSuccess }) {
 	const [paid, setPaid] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState('mpesa')
 
+	// On valid submission, mark the fee as paid and notify the parent workflow.
 	function handlePayment(event) {
 		event.preventDefault()
 		setPaid(true)

@@ -1,16 +1,20 @@
 import { useState } from 'react'
 
+// This modal lets a user either log in or create an account before they continue.
 function Authentication({ onAuthenticated }) {
+    // Track which auth mode is active and what the user typed in the form.
     const [mode, setMode] = useState('login')
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
+    // Validate the form and notify the parent that authentication has succeeded.
     function handleSubmit(event) {
         event.preventDefault()
         onAuthenticated()
     }
 
+    // Switch between login and sign-up screens while clearing the password field.
     function switchMode(nextMode) {
         setMode(nextMode)
         setPassword('')

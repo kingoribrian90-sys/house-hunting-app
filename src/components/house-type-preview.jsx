@@ -31,8 +31,8 @@ const houseTypePhotos = {
     },
 }
 
-function HouseTypePreview({ houseType, houseTypes, onClose, onContinue, onPayListingFee, onReturnToSearch }) {
-    // Support one house type for owners or several recommended types for tenants.
+function HouseTypePreview({ houseType, houseTypes, location, budget, onClose, onContinue, onPayListingFee, onReturnToSearch, onViewDetails }) {
+    // Support tenant details and owner actions in the shared preview.
     const selectedHouseTypes = houseTypes || [houseType]
     const hasOwnerActions = typeof onPayListingFee === 'function' || typeof onReturnToSearch === 'function'
 
@@ -61,6 +61,18 @@ function HouseTypePreview({ houseType, houseTypes, onClose, onContinue, onPayLis
                                     <img key={photo} src={photo} alt={`${selection.label} sample ${index + 1}`} />
                                 ))}
                             </div>
+                            <button
+                                className="property-details-button"
+                                type="button"
+                                onClick={() => onViewDetails({
+                                    type: selection.label,
+                                    photo: selection.photos[0],
+                                    location,
+                                    budget,
+                                })}
+                            >
+                                View full details
+                            </button>
                         </div>
                     )
                 })}

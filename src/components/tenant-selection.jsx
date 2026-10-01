@@ -6,6 +6,7 @@ import HouseTypePreview from './house-type-preview'
 import LocationDetailsWindow from './location-details-window'
 import StandardListingsMap from './standard-listings-map'
 import { getMarketRecommendations } from '../rental-market'
+import PropertyDetailsWindow from './property-details-window'
 
 
 const budgetOptions = [
@@ -56,6 +57,7 @@ function TenantSelection() {
     const [previewOpen, setPreviewOpen] = useState(false)
     const [standardListingsOpen, setStandardListingsOpen] = useState(false)
     const [selectedListing, setSelectedListing] = useState(null)
+    const [propertyDetails, setPropertyDetails] = useState(null)
     // Derive the matching budget band, county data, and market guidance.
     const selectedBudget = budgetOptions.find((option) => tenantBudget <= option.max)
     const selectedCounty = urbanCountyOptions.find((option) => option.county === tenantLocation)
@@ -162,10 +164,23 @@ function TenantSelection() {
             {previewOpen && (
                 <HouseTypePreview
                     houseTypes={selectedBudget.houseTypes.map((type) => houseTypeKeys[type])}
+                    location={tenantLocation}
+                    budget={tenantBudget}
                     onClose={() => setPreviewOpen(false)}
+                    onViewDetails={setPropertyDetails}
                     onContinue={() => {
                         setPreviewOpen(false)
                         setPaymentOpen(true)
+                    }}
+                />
+            )}
+            {propertyDetails && (
+                <PropertyDetailsWindow
+                    property={propertyDetails}
+                    onClose={() => setPropertyDetails(null)}
+                    onNotInterested={() => {
+                        setPropertyDetails(null)
+                        setPreviewOpen(false)
                     }}
                 />
             )}

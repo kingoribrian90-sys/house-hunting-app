@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getRentEstimate } from '../rental-market'
 import { UtilityPaymentBreakdown } from './tenants-payment-window'
+import { api } from '../api'
 
 const fallbackCoordinates = { latitude: -1.286389, longitude: 36.817223 }
 
@@ -81,6 +82,8 @@ function LocationDetailsWindow({ listing, onClose, onBackToMap }) {
     const [activeTab, setActiveTab] = useState('overview')
     const [tourRequested, setTourRequested] = useState(false)
     const [tourDetails, setTourDetails] = useState(null)
+    const [tourSubmitting, setTourSubmitting] = useState(false)
+    const [tourError, setTourError] = useState('')
     const details = getAreaDetails(location, coordinates, refreshTick)
     const address = listing.address || `${listing.area}, ${listing.county}, Kenya`
     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
@@ -119,14 +122,26 @@ function LocationDetailsWindow({ listing, onClose, onBackToMap }) {
         setLastUpdated(new Date())
     }
 
-    function handleTourRequest(event) {
+    async function handleTourRequest(event) {
         event.preventDefault()
         const formData = new FormData(event.currentTarget)
-        setTourDetails({
-            email: formData.get('tour-email'),
-            dateTime: formData.get('tour-datetime'),
-        })
-        setTourRequested(true)
+        const email = formData.get('tour-email')
+        const dateTime = formData.get('tour-datetime')
+        setTourSubmitting(true)
+        setTourError('')
+
+        try {
+            await api.post('/v1/virtual-tour-requests', {
+                emailAddress: email,
+                dateAndTime: dateTime,
+            })
+            setTourDetails({ email, dateTime })
+            setTourRequested(true)
+        } catch (error) {
+            setTourError(error.message)
+        } finally {
+            setTourSubmitting(false)
+        }
     }
 
     function renderDetailsPanel() {
@@ -221,7 +236,7 @@ function LocationDetailsWindow({ listing, onClose, onBackToMap }) {
                         <div className="tour-confirmation" role="status">
                             <strong>Virtual tour requested</strong>
                             <p>{new Date(tourDetails.dateTime).toLocaleString()} · Confirmation for {tourDetails.email}</p>
-                            <p>This demo records the request locally; no owner notification has been sent.</p>
+                            <p>Your request has been recorded. Contact the property owner to confirm the preferred time.</p>
                             <button className="text-button" type="button" onClick={() => { setTourRequested(false); setTourDetails(null) }}>Back to property details</button>
                         </div>
                     ) : (
@@ -232,9 +247,10 @@ function LocationDetailsWindow({ listing, onClose, onBackToMap }) {
                             <input id="tour-email" name="tour-email" type="email" placeholder="you@example.com" required />
                             <label htmlFor="tour-datetime">Preferred date and time</label>
                             <input id="tour-datetime" name="tour-datetime" type="datetime-local" min={getLocalDateTimeValue(new Date())} required />
+                            {tourError && <p className="form-error" role="alert">{tourError}</p>}
                             <div className="property-decision">
-                                <button type="button" onClick={() => setTourRequested(false)}>Back</button>
-                                <button type="submit">Send virtual tour request</button>
+                                <button type="button" onClick={() => { setTourRequested(false); setTourError('') }}>Back</button>
+                                <button type="submit" disabled={tourSubmitting}>{tourSubmitting ? 'Sending request…' : 'Send virtual tour request'}</button>
                             </div>
                         </form>
                     )

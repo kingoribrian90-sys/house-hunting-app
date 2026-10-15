@@ -8,8 +8,8 @@ function HouseOwnerDashboard({ onBackToSearch }) {
 				<h3 id="owner-dashboard-title">Listing dashboard</h3>
 				<div className="dashboard-status-card" role="status">
 					<span className="status-label">Payment status</span>
-					<strong>Listing fee received</strong>
-					<p>Your listing fee payment is complete.</p>
+					<strong>Payment request pending</strong>
+					<p>Your M-Pesa request was recorded and is awaiting provider confirmation.</p>
 				</div>
 				<button className="location-done" type="button" onClick={onBackToSearch}>Return to owner search</button>
 			</section>

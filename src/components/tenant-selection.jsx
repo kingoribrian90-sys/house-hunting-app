@@ -1,12 +1,10 @@
 import { useState } from 'react'
-
-import TenantsPaymentWindow from './tenants-payment-window'
-
 import HouseTypePreview from './house-type-preview'
 import LocationDetailsWindow from './location-details-window'
 import StandardListingsMap from './standard-listings-map'
 import { getMarketRecommendations } from '../rental-market'
 import PropertyDetailsWindow from './property-details-window'
+import { api } from '../api'
 
 
 // These budget bands map to the house types a tenant can realistically search for.
@@ -49,17 +47,19 @@ const houseTypeKeys = {
     'Two bedroom': 'two-bedroom',
 }
 
-// This component is the tenant journey: choose county/locality, set a budget, preview matches, and pay for access.
+// This component records tenant searches and lets tenants browse matching listings.
 function TenantSelection() {
     // Store the tenant's search choices and the open follow-up windows.
     const [tenantLocation, setTenantLocation] = useState('')
     const [tenantLocality, setTenantLocality] = useState('')
     const [tenantBudget, setTenantBudget] = useState(5000)
-    const [paymentOpen, setPaymentOpen] = useState(false)
     const [previewOpen, setPreviewOpen] = useState(false)
     const [standardListingsOpen, setStandardListingsOpen] = useState(false)
     const [selectedListing, setSelectedListing] = useState(null)
     const [propertyDetails, setPropertyDetails] = useState(null)
+    const [submittingSearch, setSubmittingSearch] = useState(false)
+    const [searchSaved, setSearchSaved] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
     // Derive the matching budget band, county data, and market guidance.
     const selectedBudget = budgetOptions.find((option) => tenantBudget <= option.max)
     const selectedCounty = urbanCountyOptions.find((option) => option.county === tenantLocation)
@@ -67,10 +67,28 @@ function TenantSelection() {
         ? getMarketRecommendations(tenantLocation, tenantBudget, selectedBudget.houseTypes, selectedCounty.locations)
         : []
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault()
-        // Preview recommended home types before starting payment.
-        setPreviewOpen(true)
+        setSubmittingSearch(true)
+        setSearchSaved(false)
+        setErrorMessage('')
+
+        try {
+            const response = await api.post('/v1/tenant-searches', {
+                county: tenantLocation,
+                locality: tenantLocality,
+                budgetRange: String(tenantBudget),
+            })
+            if (!response.data || !(response.data.id || response.data._id)) {
+                throw new Error('The search was submitted but the API did not return its ID.')
+            }
+            setSearchSaved(true)
+            setPreviewOpen(true)
+        } catch (error) {
+            setErrorMessage(error.message)
+        } finally {
+            setSubmittingSearch(false)
+        }
     }
 
     return (
@@ -160,7 +178,11 @@ function TenantSelection() {
                         Browse Listings on Map
                     </button>
                 </div>
-                <button type="submit">Continue to payment</button>
+                {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+                {searchSaved && <p className="form-success" role="status">Your search was saved. Browse listings that match your area and budget.</p>}
+                <button type="submit" disabled={submittingSearch}>
+                    {submittingSearch ? 'Saving search…' : 'Preview matching homes'}
+                </button>
             </form>
             {/* Move from recommendations to payment after the preview. */}
             {previewOpen && (
@@ -172,7 +194,7 @@ function TenantSelection() {
                     onViewDetails={setPropertyDetails}
                     onContinue={() => {
                         setPreviewOpen(false)
-                        setPaymentOpen(true)
+                        setStandardListingsOpen(true)
                     }}
                 />
             )}
@@ -186,19 +208,11 @@ function TenantSelection() {
                     }}
                 />
             )}
-            {paymentOpen && (
-                <TenantsPaymentWindow
-                    location={tenantLocation}
-                    budget={tenantBudget}
-                    onClose={() => setPaymentOpen(false)}
-                />
-            )}
             {standardListingsOpen && !selectedListing && (
                 <StandardListingsMap
                     location={tenantLocation}
                     locality={tenantLocality}
                     budget={tenantBudget}
-                    suggestedLocations={selectedCounty.locations}
                     recommendations={marketRecommendations}
                     onSelectListing={setSelectedListing}
                     onClose={() => {

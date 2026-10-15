@@ -1,16 +1,22 @@
-# React + Vite
+# Broto house hunting
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Run locally
 
-Currently, two official plugins are available:
+1. Configure MongoDB by creating `server/src/.env` with a `MONGO_URI` value. The backend uses port `5000` by default.
+2. Start the backend from the `server` directory:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+   ```sh
+   npm install
+   npm run dev
+   ```
 
-## React Compiler
+3. In a second terminal, start the frontend from the repository root:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+   ```sh
+   npm install
+   npm run dev
+   ```
 
-## Expanding the Oxlint configuration
+Vite proxies `/api` requests to `http://localhost:5000`, so the frontend can use the backend without a separate CORS setup during local development. To point the frontend directly at another API host, set `VITE_API_BASE_URL` to that host's `/api` URL.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The frontend currently uses the backend for account signup/login, listing creation and browsing, tenant search submission, M-Pesa listing-fee requests, and virtual-tour requests. The server records listing-fee requests as pending; it does not currently confirm or process payments, and tenant search-pass payments are not implemented.

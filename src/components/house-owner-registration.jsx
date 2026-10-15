@@ -25,7 +25,6 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 	const [preferredLocality, setPreferredLocality] = useState('')
 	const [previewOpen, setPreviewOpen] = useState(false)
 	const [listingFeeOpen, setListingFeeOpen] = useState(false)
-	const [listing, setListing] = useState(null)
 	const [submitting, setSubmitting] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	const selectedCounty = urbanCountyOptions.find((option) => option.county === preferredLocation)
@@ -44,14 +43,13 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 				houseType: selectedHouseType,
 				electricityBillingMode: formData.get('electricity-billing-mode'),
 				waterBillingMode: formData.get('water-billing-mode'),
-				budget: Number(formData.get('budget')),
-				email: formData.get('email'),
+				monthlyBudget: Number(formData.get('budget')),
+				emailAddress: formData.get('email'),
 			})
-			const createdListing = response.listing || response
-			if (!createdListing.id) {
+			const createdListing = response.data
+			if (!createdListing || !(createdListing.id || createdListing._id)) {
 				throw new Error('The listing was saved but the API did not return its ID.')
 			}
-			setListing(createdListing)
 			setPreviewOpen(true)
 		} catch (error) {
 			setErrorMessage(error.message)
@@ -155,9 +153,8 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 			)}
 			{listingFeeOpen && (
 				<HouseOwnerPayListingFee
-					listingId={listing?.id}
 					onClose={() => setListingFeeOpen(false)}
-					onPaymentSuccess={() => {
+					onPaymentRequestSubmitted={() => {
 						if (typeof onListingSubmitted === 'function') {
 							onListingSubmitted()
 						}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { api } from '../api'
 
 // This modal lets a user either log in or create an account before they continue.
@@ -11,26 +11,6 @@ function Authentication({ onAuthenticated, initialMode = 'login' }) {
     const [submitting, setSubmitting] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
 
-    useEffect(() => {
-        let active = true
-
-        api.get('/auth/me')
-            .then((user) => {
-                if (active && user) {
-                    onAuthenticated(user)
-                }
-            })
-            .catch((error) => {
-                if (active && error.status !== 401) {
-                    setErrorMessage(error.message)
-                }
-            })
-
-        return () => {
-            active = false
-        }
-    }, [onAuthenticated])
-
     // Send credentials to the selected auth endpoint before continuing.
     async function handleSubmit(event) {
         event.preventDefault()
@@ -39,10 +19,10 @@ function Authentication({ onAuthenticated, initialMode = 'login' }) {
 
         try {
             const user = await api.post(
-                mode === 'login' ? '/auth/login' : '/auth/register',
+                mode === 'login' ? '/v1/auth/login' : '/v1/signup',
                 mode === 'login'
-                    ? { email, password }
-                    : { username, email, password },
+                    ? { emailAddress: email, password }
+                    : { username, emailAddress: email, password },
             )
             onAuthenticated(user.user || user)
         } catch (error) {

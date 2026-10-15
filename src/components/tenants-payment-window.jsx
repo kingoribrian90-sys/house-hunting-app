@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { api } from '../api'
 
 // Show a utility estimate for the selected area so the tenant can understand moving costs.
 export function UtilityPaymentBreakdown({ location, utilities }) {
@@ -25,6 +26,8 @@ function TenantsPaymentWindow({ location, budget, onClose }) {
 	// Track payment completion and the pass selected by the tenant.
 	const [paid, setPaid] = useState(false)
 	const [subscription, setSubscription] = useState('monthly')
+	const [submitting, setSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
 	const subscriptionOptions = [
 		{ value: 'daily', label: 'Daily pass', description: 'Search for 24 hours', divisor: 30 },
 		{ value: 'weekly', label: 'Weekly pass', description: 'Search for 7 days', divisor: 4 },
@@ -37,10 +40,27 @@ function TenantsPaymentWindow({ location, budget, onClose }) {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	})
-	function handlePayment(event) {
+	async function handlePayment(event) {
 		event.preventDefault()
-		// Mark the demo payment as successful after form validation.
-		setPaid(true)
+		const formData = new FormData(event.currentTarget)
+		setSubmitting(true)
+		setErrorMessage('')
+
+		try {
+			await api.post('/payments/search-pass', {
+				location,
+				budget,
+				subscription,
+				amount: passAmount,
+				currency: 'KES',
+				email: formData.get('email'),
+			})
+			setPaid(true)
+		} catch (error) {
+			setErrorMessage(error.message)
+		} finally {
+			setSubmitting(false)
+		}
 	}
 
 	return (
@@ -76,8 +96,11 @@ function TenantsPaymentWindow({ location, budget, onClose }) {
 							))}
 						</fieldset>
 						<label htmlFor="payment-email">Payment email</label>
-						<input id="payment-email" type="email" placeholder="you@example.com" required />
-						<button type="submit">Pay KSh {formattedPassAmount}</button>
+						<input id="payment-email" name="email" type="email" placeholder="you@example.com" required />
+						{errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+						<button type="submit" disabled={submitting}>
+							{submitting ? 'Processing payment…' : `Pay KSh ${formattedPassAmount}`}
+						</button>
 					</form>
 				)}
 			</section>

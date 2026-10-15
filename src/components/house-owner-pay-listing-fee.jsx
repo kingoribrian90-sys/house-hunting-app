@@ -1,17 +1,37 @@
 import { useState } from 'react'
-
+import { api } from '../api'
 // This form handles the owner's one-time listing fee payment before the property goes live.
-function HouseOwnerPayListingFee({ onClose, onPaymentSuccess }) {
+function HouseOwnerPayListingFee({ listingId, onClose, onPaymentSuccess }) {
 	const [paid, setPaid] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState('mpesa')
+	const [submitting, setSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
 
-	// On valid submission, mark the fee as paid and notify the parent workflow.
-	function handlePayment(event) {
+	// Record payment through the listing-fee endpoint before completing the flow.
+	async function handlePayment(event) {
 		event.preventDefault()
-		setPaid(true)
-        if (typeof onPaymentSuccess === 'function') {
-            onPaymentSuccess()
-        }
+		const formData = new FormData(event.currentTarget)
+		setSubmitting(true)
+		setErrorMessage('')
+
+		try {
+			await api.post('/payments/listing-fee', {
+				listingId,
+				amount: 500,
+				currency: 'KES',
+				paymentMethod,
+				phoneNumber: paymentMethod === 'mpesa' ? formData.get('phoneNumber') : undefined,
+				email: formData.get('email'),
+			})
+			setPaid(true)
+			if (typeof onPaymentSuccess === 'function') {
+				onPaymentSuccess()
+			}
+		} catch (error) {
+			setErrorMessage(error.message)
+		} finally {
+			setSubmitting(false)
+		}
 	}
 
 	return (
@@ -63,13 +83,14 @@ function HouseOwnerPayListingFee({ onClose, onPaymentSuccess }) {
                             </label>
 						</fieldset>
 
-                        {paymentMethod === 'mpesa' ? (
-                            <input type="tel" placeholder="e.g. 0712 345 678" required />
-                        ) : (
-                            <input type="text" placeholder="Card number" required />
+                        {paymentMethod === 'mpesa' && (
+                        	<input name="phoneNumber" type="tel" placeholder="e.g. 0712 345 678" required />
                         )}
-                        <input type="email" placeholder="you@example.com" required />
-                        <button type="submit">Pay KSh 500</button>
+                        <input name="email" type="email" placeholder="you@example.com" required />
+                        {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+                        <button type="submit" disabled={submitting}>
+                        	{submitting ? 'Processing payment…' : 'Pay KSh 500'}
+                        </button>
 					</form>
 				)}
 			</section>

@@ -1244,6 +1244,11 @@ p {
   font-size: 16px;
 }
 
+.form-error {
+  color: #c62828;
+  font-size: 14px;
+}
+
 .location-backdrop {
   /* Overlay live location metrics without leaving the search flow. */
   position: fixed;

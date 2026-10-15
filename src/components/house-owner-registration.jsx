@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import HouseTypePreview from './house-type-preview'
 import HouseOwnerPayListingFee from './house-owner-pay-listing-fee'
-
+import { api } from '../api'
 // Define the counties and corresponding localities that the owner may choose from.
 const urbanCountyOptions = [
 	{ county: 'Nairobi County', locations: ['Kasarani', 'Roysambu', 'Westlands', 'Kilimani', 'Embakasi'] },
@@ -25,12 +25,39 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 	const [preferredLocality, setPreferredLocality] = useState('')
 	const [previewOpen, setPreviewOpen] = useState(false)
 	const [listingFeeOpen, setListingFeeOpen] = useState(false)
+	const [listing, setListing] = useState(null)
+	const [submitting, setSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
 	const selectedCounty = urbanCountyOptions.find((option) => option.county === preferredLocation)
 
-	// After the browser validates the form, show the sample property preview.
-	function handleSubmit(event) {
+	// Create the owner's listing before allowing the preview and fee flow to continue.
+	async function handleSubmit(event) {
 		event.preventDefault()
-		setPreviewOpen(true)
+		const formData = new FormData(event.currentTarget)
+		setSubmitting(true)
+		setErrorMessage('')
+
+		try {
+			const response = await api.post('/listings', {
+				county: preferredLocation,
+				locality: preferredLocality,
+				houseType: selectedHouseType,
+				electricityBillingMode: formData.get('electricity-billing-mode'),
+				waterBillingMode: formData.get('water-billing-mode'),
+				budget: Number(formData.get('budget')),
+				email: formData.get('email'),
+			})
+			const createdListing = response.listing || response
+			if (!createdListing.id) {
+				throw new Error('The listing was saved but the API did not return its ID.')
+			}
+			setListing(createdListing)
+			setPreviewOpen(true)
+		} catch (error) {
+			setErrorMessage(error.message)
+		} finally {
+			setSubmitting(false)
+		}
 	}
 
 	return (
@@ -109,7 +136,10 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 					<label htmlFor="owner-email">Email address</label>
 					<input id="owner-email" name="email" type="email" placeholder="you@example.com" required />
 				</div>
-				<button type="submit">Find a home</button>
+				{errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+				<button type="submit" disabled={submitting}>
+					{submitting ? 'Saving listing…' : 'Find a home'}
+				</button>
 			</form>
 			{/* Display the selected house type without leaving the form. */}
 			{previewOpen && (
@@ -125,6 +155,7 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 			)}
 			{listingFeeOpen && (
 				<HouseOwnerPayListingFee
+					listingId={listing?.id}
 					onClose={() => setListingFeeOpen(false)}
 					onPaymentSuccess={() => {
 						if (typeof onListingSubmitted === 'function') {
@@ -138,4 +169,3 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 }
 
 export default HouseOwnerRegistration
-

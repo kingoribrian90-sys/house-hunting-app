@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { api } from '../api'
 
 // This modal lets a user either log in or create an account before they continue.
 function Authentication({ onAuthenticated, initialMode = 'login' }) {
@@ -7,11 +8,48 @@ function Authentication({ onAuthenticated, initialMode = 'login' }) {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
 
-    // Validate the form and notify the parent that authentication has succeeded.
-    function handleSubmit(event) {
+    useEffect(() => {
+        let active = true
+
+        api.get('/auth/me')
+            .then((user) => {
+                if (active && user) {
+                    onAuthenticated(user)
+                }
+            })
+            .catch((error) => {
+                if (active && error.status !== 401) {
+                    setErrorMessage(error.message)
+                }
+            })
+
+        return () => {
+            active = false
+        }
+    }, [onAuthenticated])
+
+    // Send credentials to the selected auth endpoint before continuing.
+    async function handleSubmit(event) {
         event.preventDefault()
-        onAuthenticated()
+        setSubmitting(true)
+        setErrorMessage('')
+
+        try {
+            const user = await api.post(
+                mode === 'login' ? '/auth/login' : '/auth/register',
+                mode === 'login'
+                    ? { email, password }
+                    : { username, email, password },
+            )
+            onAuthenticated(user.user || user)
+        } catch (error) {
+            setErrorMessage(error.message)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     // Switch between login and sign-up screens while clearing the password field.
@@ -26,6 +64,7 @@ function Authentication({ onAuthenticated, initialMode = 'login' }) {
                 <p className="recommendation-kicker">Broto house hunting</p>
                 <h2 id="auth-title">Find your next home</h2>
                 <p className="auth-description">Sign in to continue, or create an account to get started.</p>
+                {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
 
                 <div className="auth-tabs" role="tablist" aria-label="Account access">
                     <button
@@ -91,7 +130,9 @@ function Authentication({ onAuthenticated, initialMode = 'login' }) {
                             required
                         />
                     </div>
-                    <button type="submit">{mode === 'login' ? 'Log in' : 'Create account'}</button>
+                    <button type="submit" disabled={submitting}>
+                        {submitting ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'}
+                    </button>
                 </form>
             </section>
         </div>

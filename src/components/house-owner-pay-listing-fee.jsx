@@ -14,7 +14,7 @@ function HouseOwnerPayListingFee({ onClose, onPaymentRequestSubmitted }) {
 		setErrorMessage('')
 
 		try {
-			await api.post('/payments/listing-fee', {
+			await api.post('/v1/payments/listing-fee', {
 				paymentMethod: 'mpesa',
 				safaricomNumber: formData.get('phoneNumber'),
 				emailAddress: formData.get('email'),

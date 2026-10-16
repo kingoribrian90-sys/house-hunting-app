@@ -37,7 +37,7 @@ function HouseOwnerRegistration({ onListingSubmitted }) {
 		setErrorMessage('')
 
 		try {
-			const response = await api.post('/listings', {
+			const response = await api.post('/v1/listings', {
 				county: preferredLocation,
 				locality: preferredLocality,
 				houseType: selectedHouseType,

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n web,api \"vite\" \"npm --prefix server run dev\"",
+    "dev": "concurrently -k -n web,api \"vite\" \"npm --prefix C:\\Desktop\\server run dev\"",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

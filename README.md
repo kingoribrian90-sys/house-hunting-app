@@ -6,10 +6,10 @@ Install the frontend and backend dependencies:
 
 ```sh
 npm install
-npm --prefix server install
+npm --prefix C:\Desktop\server install
 ```
 
-Set `MONGO_URI` in `server/src/.env` to a reachable MongoDB connection string, then run:
+Set `MONGO_URI` in `C:\Desktop\server\src\.env` to a reachable MongoDB connection string, then run:
 
 ```sh
 npm run dev
